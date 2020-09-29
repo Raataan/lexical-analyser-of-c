@@ -32,7 +32,21 @@ bool is_operator(char buffer[])
 int main()
 {
     ifstream fin("program.txt");
+    ofstream fout("mark.txt");
+    string line_now;
     if(!fin.is_open())
         cout << "Error: Can\'t open the file. ";
+    else
+    {
+        while(fin.good() && !fin.eof())
+        {
+            line_now.clear();
+            getline(fin, line_now);
+            cout << line_now << endl;
+        }
+    }
+
+    fin.close();
+    fout.close();
     return 0;
 }
