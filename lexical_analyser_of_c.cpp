@@ -2,18 +2,40 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-
+#include <vector>
+#include <algorithm>
 using namespace std;
+
 void next();
 string read_file_to_string();
 string code = read_file_to_string();
 string::iterator iter = code.begin();
+
 char *src = (char *)code.c_str();
 char token;
-int token_val, line = 1;
+int token_val,line;
+vector<string> keywords = {"auto", "break", "case", "char", "const", "continue",
+                           "default", "do", "double", "else", "enum", "extern",
+                           "float", "for", "goto", "if", "int", "long",
+                           "register", "return", "short", "signed", "sizeof", "static",
+                           "struct", "switch", "typedef", "union", "unsigned", "void",
+                           "volatile", "while"};
 ofstream fout;
+typedef struct identifier
+{
+    int token;
+    string name;
+    int value;
+} ID;
+enum
+{
+    identifier,
+    keyword,
+    op
+};
 int main()
 {
+    line = count(code.begin(), code.end(), '\n')+1;
     fout.open("mark.txt", ios::out | ios::trunc);
     while ((token = *iter))
     {
@@ -23,8 +45,13 @@ int main()
                 iter++;
             token = *iter;
         }
-        if (token == '\n')
-            line++;
+        if (token == '/' && *(iter + 1) == '/')
+        {
+            while (*iter != '\n')
+                iter++;
+            token = *iter;
+        }
+
         next();
         iter++;
     }
@@ -43,9 +70,9 @@ string read_file_to_string()
 }
 void next()
 {
-    if (token >= '0' && token <= '9')
+    if (token >= '0' && token <= '9') // parse number, three kinds: dec(123) hex(0x123) oct(017)
+
     {
-        // parse number, three kinds: dec(123) hex(0x123) oct(017)
         token_val = token - '0';
         iter++;
         if (token_val > 0)
@@ -78,7 +105,7 @@ void next()
                 }
             }
         }
-        fout << "< Number, Line=" << line << ", Value=" << token_val<<" >"<<endl;
+        fout << "< Number, Line=" << line << ", Value=" << token_val << " >" << endl;
         return;
     }
     else if (token == '"') //string
@@ -86,10 +113,10 @@ void next()
         string now;
         while (*++iter != '"')
         {
-            if (*iter == '\n')
-                line++;
+            if (*iter == '\n'||*iter=='\\'||*iter=='\r')//f**k \r!!!! waste a lot of time here
+                continue;
             now.push_back(*iter);
         }
-        fout << "< String, Line=" << line << ", Value=" << now<<" >"<<endl;
+        fout << "< String, Line=" << line << ", Value=" << now << " >" << endl;
     }
 }
