@@ -7,6 +7,7 @@
 using namespace std;
 
 void next();
+void error_process();
 void print_overview();
 string read_file_to_string();
 string code = read_file_to_string();
@@ -57,6 +58,7 @@ int main()
         }
         else if (token == '/' && *(iter + 1) == '*')
         {
+            int now_line = count(code.begin(), iter, '\n') + 1;
             for (;; iter++)
             {
                 if (*iter == '*' && *(iter + 1) == '/')
@@ -64,6 +66,11 @@ int main()
                     iter += 2;
                     token = *iter;
                     break;
+                }
+                else if ((iter + 1) == code.end())
+                {
+                    fout << "< Error: Incomplete comment, Line=" << now_line << " >" << endl;
+                    return -1;
                 }
             }
         }
@@ -87,6 +94,7 @@ void next()
 {
     if (token >= '0' && token <= '9') // parse number, three kinds: dec(123) hex(0x123) oct(017)
     {
+        double token_val_double = 0;
         token_val = token - '0';
         iter++;
         if (token_val > 0)
@@ -95,6 +103,19 @@ void next()
             while (*iter >= '0' && *iter <= '9')
             {
                 token_val = token_val * 10 + *iter++ - '0';
+            }
+            if (*iter == '.')
+            {
+                iter++;
+                while (*iter >= '0' && *iter <= '9')
+                {
+                    token_val_double = token_val_double * 10 + *iter++ - '0';
+                }
+                while (token_val_double > 1)
+                {
+                    token_val_double /= 10;
+                }
+                token_val_double += token_val;
             }
         }
         else
@@ -116,12 +137,32 @@ void next()
                 while (*iter >= '0' && *iter <= '7')
                 {
                     token_val = token_val * 8 + *iter++ - '0';
+                    token = *iter;
                 }
             }
         }
+        if (*iter == 'e' || *iter == 'E')
+        {
+            iter++;
+            int exp = 0;
+            while (*iter >= '0' && *iter <= '9')
+            {
+                exp = exp * 10 + *iter++ - '0';
+            }
+            while (exp--)
+            {
+                token_val_double *= 10;
+                token_val *= 10;
+            }
+        }
+        token = *iter;
+        error_process();
         iter--; //set back iterator
         line = count(code.begin(), iter, '\n') + 1;
-        fout << "< Number, Line=" << line << ", Value=" << token_val << " >" << endl;
+        if (token_val_double > 0)
+            fout << "< Number, Line=" << line << ", Value=" << token_val_double << " >" << endl;
+        else
+            fout << "< Number, Line=" << line << ", Value=" << token_val << " >" << endl;
         number_amount++;
         return;
     }
@@ -221,4 +262,18 @@ void print_overview()
     fout << "String Amount: " << string_amount << endl;
     fout << "Number Amount: " << number_amount << endl;
     fout << "Character Amount: " << code.length();
+}
+void error_process()
+{
+    if (!(token == ' ' || token == ',' || token == ';' || token == ')' || token == ']'))
+    {
+        line = count(code.begin(), iter, '\n') + 1;
+        fout << "< Error: Invalid digit in Line " << line << " >" << endl;
+        while (!(token == ' ' || token == ',' || token == ';'))
+        {
+            token = *++iter;
+        }
+        return;
+    }
+    return;
 }
