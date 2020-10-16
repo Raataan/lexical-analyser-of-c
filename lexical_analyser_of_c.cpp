@@ -7,7 +7,7 @@
 using namespace std;
 
 void next();
-void error_process();
+int error_process();
 void print_overview();
 string read_file_to_string();
 string code = read_file_to_string();
@@ -131,6 +131,16 @@ void next()
                     token = *++iter;
                 }
             }
+            else if (*iter == 'b' || *iter == 'B')
+            {
+                //binary
+                token = *++iter;
+                while ((token == '0' || token == '1'))
+                {
+                    token_val = token_val * 2 + token - '0';
+                    token = *++iter;
+                }
+            }
             else
             {
                 // oct
@@ -138,6 +148,19 @@ void next()
                 {
                     token_val = token_val * 8 + *iter++ - '0';
                     token = *iter;
+                }
+                if (*iter == '.')
+                {
+                    iter++;
+                    while (*iter >= '0' && *iter <= '9')
+                    {
+                        token_val_double = token_val_double * 10 + *iter++ - '0';
+                    }
+                    while (token_val_double > 1)
+                    {
+                        token_val_double /= 10;
+                    }
+                    token_val_double += token_val;
                 }
             }
         }
@@ -156,8 +179,9 @@ void next()
             }
         }
         token = *iter;
-        error_process();
         iter--; //set back iterator
+        if(!error_process())
+            return;
         line = count(code.begin(), iter, '\n') + 1;
         if (token_val_double > 0)
             fout << "< Number, Line=" << line << ", Value=" << token_val_double << " >" << endl;
@@ -200,6 +224,7 @@ void next()
             }
             else //two-digit
             {
+                token_s.pop_back();
                 line = count(code.begin(), iter, '\n') + 1;
                 fout << "< Op, Line=" << line << ", Value=\"" << token_s << "\" >" << endl; //two-digit are all Op.
                 op_amount++;
@@ -263,7 +288,7 @@ void print_overview()
     fout << "Number Amount: " << number_amount << endl;
     fout << "Character Amount: " << code.length();
 }
-void error_process()
+int error_process()
 {
     if (!(token == ' ' || token == ',' || token == ';' || token == ')' || token == ']'))
     {
@@ -273,7 +298,7 @@ void error_process()
         {
             token = *++iter;
         }
-        return;
+        return 0;
     }
-    return;
+    return 1;
 }
