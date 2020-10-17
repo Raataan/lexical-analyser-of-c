@@ -6,38 +6,37 @@
 #include <vector>
 using namespace std;
 
-void next();
-int error_process();
-void print_overview();
-string read_file_to_string();
+void next();// main scanning function
+int error_process();// dealing with error
+void print_overview();//print statistic of code
+string read_file_to_string();// storage .c file to a string variable
 string code = read_file_to_string();
-string::iterator iter = code.begin();
-vector<string>::iterator keyword_finder;
-char *src = (char *)code.c_str();
-char token;
+string::iterator iter = code.begin();//pointer for the code string
+vector<string>::iterator keyword_finder;//pointer
+char token;//charater now
 int token_val, line, delimiter_amount = 0, op_amount = 0, keyword_amount = 0, string_amount = 0, number_amount = 0, comment_amount = 0;
 vector<string> keywords = {"auto", "break", "case", "char", "const", "continue",
                            "default", "do", "double", "else", "enum", "extern",
                            "float", "for", "goto", "if", "int", "long",
                            "register", "return", "short", "signed", "sizeof", "static",
                            "struct", "switch", "typedef", "union", "unsigned", "void",
-                           "volatile", "while"};
+                           "volatile", "while"};//keywords list
 vector<string> one_op_and_delimiter = {
     "+", "-", "*", "/",
     "<", ">", "=",
     "\?", ":", "!", "&",
     "|", "%", "~", "^",
     ";", "(", ")", ",", "\"", "\'", "[", "]",
-    "{", "}", "\\", "."};
+    "{", "}", "\\", "."};//operator and delimiter list
 vector<string> two_op_and_delimiter = {
     "<=", ">=", "==", "+=", "!="
                             "&&",
     "||", "<<", ">>",
-    "&=", "^=", "|="};
+    "&=", "^=", "|="};//operator list
 vector<string> three_op_and_delimiter = {
-    "<<=", ">>="};
-vector<string> identifier;
-ofstream fout;
+    "<<=", ">>="};//operator list
+vector<string> identifier;//identifier list
+ofstream fout;// output file handle
 int main()
 {
 
@@ -92,7 +91,9 @@ string read_file_to_string()
 }
 void next()
 {
-    if (token >= '0' && token <= '9') // parse number, three kinds: dec(123) hex(0x123) oct(017)
+    if (token == ' ')
+        return;
+    else if (token >= '0' && token <= '9') // parse number, four kinds: dec(123) hex(0x123) oct(017) bin(01)
     {
         double token_val_double = 0;
         token_val = token - '0';
@@ -180,7 +181,7 @@ void next()
         }
         token = *iter;
         iter--; //set back iterator
-        if(!error_process())
+        if (!error_process())
             return;
         line = count(code.begin(), iter, '\n') + 1;
         if (token_val_double > 0)
